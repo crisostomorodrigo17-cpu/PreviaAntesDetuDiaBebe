@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para Rosarini♥</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        burgundy: {
+                            50: '#fdf2f4',
+                            100: '#fbe5e9',
+                            200: '#f7ced6',
+                            300: '#f0a7b7',
+                            400: '#e5748f',
+                            500: '#d5486c',
+                            600: '#bf2b52',
+                            700: '#a01e40',
+                            800: '#851c38',
+                            900: '#520b1f',
+                            950: '#2d030e',
+                        },
+                        cream: '#FFFDF9',
+                        roseGold: '#E8C39E',
+                        softGold: '#D4AF37',
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        garamond: ['Cormorant Garamond', 'serif'],
+                        cursive: ['Great Vibes', 'cursive'],
+                        sans: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #1f030a 0%, #3d0716 35%, #520b1f 70%, #21020a 100%);
+            color: #FFFDF9;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Ambient floating petals background canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Glassmorphic card containers */
+        .glass-card {
+            background: rgba(255, 253, 249, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .paper-card {
+            background: #FFFDF9;
+            color: #2d030e;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        /* Drop cap styling */
+        .first-letter-cap::first-letter {
+            font-family: 'Great Vibes', cursive;
+            font-size: 4.8rem;
+            float: left;
+            line-height: 0.8;
+            margin-right: 0.75rem;
+            margin-top: 0.2rem;
+            color: #851c38;
+            text-shadow: 2px 2px 4px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Envelope Interactive Styles */
+        .envelope-container {
+            perspective: 1000px;
+        }
+
+        .envelope {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            background: #6e102a;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6), 0 0 25px rgba(212, 175, 55, 0.2);
+            cursor: pointer;
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .envelope:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.7), 0 0 35px rgba(212, 175, 55, 0.35);
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 250px solid transparent;
+            border-right: 250px solid transparent;
+            border-top: 160px solid #851c38;
+            transform-origin: top;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 5;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+        }
+
+        @media (max-width: 640px) {
+            .envelope {
+                height: 250px;
+            }
+            .envelope-flap {
+                border-left-width: 42vw;
+                border-right-width: 42vw;
+                border-top-width: 135px;
+            }
+        }
+
+        .envelope-pocket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 250px solid #a01e40;
+            border-right: 250px solid #a01e40;
+            border-top: 140px solid transparent;
+            border-bottom: 160px solid #a01e40;
+            border-radius: 0 0 16px 16px;
+            z-index: 4;
+        }
+
+        @media (max-width: 640px) {
+            .envelope-pocket {
+                border-left-width: 42vw;
+                border-right-width: 42vw;
+                border-top-width: 115px;
+                border-bottom-width: 135px;
+            }
+        }
+
+        /* Wax Seal Stamp */
+        .wax-seal {
+            position: absolute;
+            top: 135px;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 68px;
+            height: 68px;
+            background: radial-gradient(circle, #D4AF37 0%, #a3821a 100%);
+            border-radius: 50%;
+            z-index: 6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.6);
+            color: #2d030e;
+            font-size: 28px;
+            transition: all 0.6s ease;
+            border: 2px solid #f3e5ab;
+        }
+
+        .envelope.open .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        .envelope.open .wax-seal {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.3);
+            pointer-events: none;
+        }
+
+        /* Text Gradients */
+        .text-gold-gradient {
+            background: linear-gradient(135deg, #FFFDF9 0%, #F3E5AB 50%, #D4AF37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Estilos del reproductor de música manual */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #D4AF37;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.8);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #28060f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #622b3a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d43737;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen font-sans selection:bg-burgundy-500 selection:text-white">
+
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Main Hero Section -->
+    <main class="relative z-10 pt-20 pb-16 px-4 max-w-6xl mx-auto flex flex-col items-center text-center">
+        
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-burgundy-900/60 border border-softGold/30 text-burgundy-200 text-xs md:text-sm mb-6 backdrop-blur-md">
+            <i class="fa-solid fa-sparkles text-softGold"></i>
+            <span>A solo 1 dia de tu dia mi niña♥</span>
+            <i class="fa-solid fa-sparkles text-softGold"></i>
+        </div>
+
+        <h1 class="font-cursive text-5xl sm:text-7xl md:text-8xl text-gold-gradient mb-3 drop-shadow-md">
+            Para mi Rosario
+        </h1>
+        <p class="font-garamond italic text-xl sm:text-2xl text-burgundy-200 max-w-2xl mx-auto mb-10 font-light leading-relaxed">
+            "Contigo en las malas y peores guapa♥"
+        </p>
+
+        <!-- SECCIÓN EN GRID: CARTA (Centro/Izquierda) + REPRODUCTOR MÚSICA (Derecha) -->
+        <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-10">
+            
+            <!-- Espacio decorativo a la izquierda en pantallas grandes -->
+            <div class="hidden lg:block lg:col-span-1"></div>
+
+            <!-- Sobre de la Carta -->
+            <div class="lg:col-span-7 flex justify-center w-full">
+                <div class="envelope-container w-full flex justify-center" onclick="openEnvelope()">
+                    <div id="mainEnvelope" class="envelope flex justify-center items-center">
+                        <div class="envelope-flap"></div>
+                        <div class="envelope-pocket"></div>
+                        <div class="wax-seal">
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                        <div class="absolute z-10 text-center px-4 pointer-events-none transform translate-y-10">
+                            <p class="font-cursive text-2xl text-burgundy-100">Para mi potona</p>
+                            <p class="text-[11px] text-softGold/90 tracking-widest uppercase mt-1">abre aqui mi potona</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REPRODUCTOR MANUAL DE MÚSICA (Ubicación derecha) -->
+            <div class="lg:col-span-4 w-full max-w-md mx-auto text-left">
+                <div class="glass-card rounded-2xl p-5 border border-softGold/40 shadow-2xl relative overflow-hidden bg-burgundy-950/80 backdrop-blur-md">
+                    <div class="absolute -top-10 -right-10 w-24 h-24 bg-softGold/10 rounded-full blur-xl pointer-events-none"></div>
+                    
+                    <!-- Encabezado reproductor -->
+                    <div class="flex items-center justify-between border-b border-softGold/20 pb-3 mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-compact-disc text-softGold text-lg animate-spin" style="animation-duration: 6s;"></i>
+                            <span class="font-semibold text-xs text-softGold tracking-wide">Reproductor de Música</span>
+                        </div>
+                        <span class="text-[10px] bg-burgundy-800 text-roseGold px-2 py-0.5 rounded-full uppercase font-bold border border-softGold/30">♥</span>
+                    </div>
+
+                    <!-- Nombre de la pista -->
+                    <div class="text-center mb-4">
+                        <p class="font-cursive text-2xl text-roseGold truncate" id="trackTitle">Para mi Rosarini</p>
+                        <p class="text-[11px] text-gray-300 italic">♥</p>
+                    </div>
+
+                    <!-- Barra de progreso -->
+                    <div class="space-y-1.5 mb-4">
+                        <input type="range" id="progressBar" value="0" min="0" max="100" class="w-full h-1.5 bg-burgundy-900 rounded-lg appearance-none cursor-pointer accent-softGold" onchange="seekAudio(this.value)">
+                        <div class="flex justify-between text-[10px] font-mono text-gray-300">
+                            <span id="currentTime">0:00</span>
+                            <span id="durationTime">0:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Control Manual -->
+                    <div class="flex items-center justify-center gap-4 mb-4">
+                        <button onclick="rewindAudio()" class="w-9 h-9 rounded-full bg-burgundy-900 border border-softGold/30 text-softGold hover:bg-softGold hover:text-burgundy-950 transition flex items-center justify-center text-xs" title="Retroceder 10s">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                        
+                        <button id="mainPlayBtn" onclick="toggleAudioManual()" class="w-12 h-12 rounded-full bg-gradient-to-r from-softGold to-yellow-600 text-burgundy-950 font-bold text-lg hover:scale-105 transition shadow-lg flex items-center justify-center p-3" title="Reproducir / Pausar">
+                            <i id="mainPlayIcon" class="fa-solid fa-play ml-0.5"></i>
+                        </button>
+
+                        <button onclick="forwardAudio()" class="w-9 h-9 rounded-full bg-burgundy-900 border border-softGold/30 text-softGold hover:bg-softGold hover:text-burgundy-950 transition flex items-center justify-center text-xs" title="Adelantar 10s">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Botón para subir archivo MP3 propio -->
+                    <div class="pt-3 border-t border-softGold/15 text-center">
+                        <label for="audioFileInput" class="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-burgundy-900/90 hover:bg-burgundy-800 border border-softGold/40 text-xs text-softGold transition shadow">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>Seleccionaras aqui la cancion que te dire</span>
+                        </label>
+                        <input type="file" id="audioFileInput" accept="audio/*" class="hidden" onchange="loadUserAudio(event)">
+                        <p class="text-[9px] text-gray-400 mt-1">Quiero que me hagas la taba mi amor XD..</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Archivo de Audio -->
+        <audio id="audioPlayer" src="cancion.mp3" preload="metadata"></audio>
+
+        <!-- Papel de Carta Romántica -->
+        <div id="letterPaper" class="paper-card rounded-3xl p-7 sm:p-12 md:p-16 text-left relative transition-all duration-1000 opacity-0 transform translate-y-10 max-w-3xl w-full my-6">
+            
+            <!-- Decoraciones de esquinas -->
+            <div class="absolute top-5 left-5 text-softGold opacity-40 text-2xl"><i class="fa-solid fa-heart"></i></div>
+            <div class="absolute top-5 right-5 text-softGold opacity-40 text-2xl"><i class="fa-solid fa-heart"></i></div>
+            <div class="absolute bottom-5 left-5 text-softGold opacity-40 text-2xl"><i class="fa-solid fa-heart"></i></div>
+            <div class="absolute bottom-5 right-5 text-softGold opacity-40 text-2xl"><i class="fa-solid fa-heart"></i></div>
+
+            <div class="border-b border-burgundy-200/80 pb-5 mb-8 flex justify-between items-end">
+                <div>
+                    <span class="text-xs font-sans text-burgundy-600 font-semibold tracking-widest uppercase block mb-1"></span>
+                    <h2 class="font-cursive text-4xl sm:text-5xl text-burgundy-900 font-bold">
+                        Para mi Rosarini♥
+                    </h2>
+                </div>
+                <span class="text-xs font-sans italic text-burgundy-700/70 hidden sm:inline">♥</span>
+            </div>
+
+            <!-- Cuerpo de la Carta -->
+            <div class="space-y-6 font-garamond text-lg md:text-xl text-gray-800 leading-relaxed">
+                
+                <p class="first-letter-cap">
+                    Te preguntaras porque te escribo todo esto sabiendo que aun falta para 1 de octubre pues es sencillo es una previa mi amor, la verdad yo no queria esperar hasta que el  reloj marcara las doce de 30 de setiembre para recordarte lo infinitamente afortunado y agradecido que me siento por tenerte en mi vida.
+                </p>
+
+                <p>
+                    Llegaste a mi mundo no solo para iluminarlo, sino para transformarlo por completo,contigo aprendí que el amor verdadero no es solo un sentimiento, sino un refugio cálido, una risa compartida en el momento justo y esa tranquilidad inquebrantable que siento cada vez que me miras a los ojos.
+                </p>
+
+                <div class="my-8 p-6 rounded-2xl bg-burgundy-50/80 border-l-4 border-burgundy-700 italic font-serif text-base md:text-lg text-burgundy-950 shadow-inner">
+                    "No necesitamos ser perfectos para que nuestra relacion sea perfecta porque siendo raritos somos la pareja mas perfecto del fucking universo♥"
+                </div>
+
+                <p>
+                    Esta carta te lo escribo antes de tu dia mi amor quiero que leas esto y recuerdes que eres admirada, respetada y profundamente amada por el hombre que camina a tu lado,gracias por tu paciencia, por tu dulzura, por ser mi novia , mi confidente y el sueño más lindo del que nunca quiero despertar, mas que mi novia quiero que seas mi esposa my soulmate♥
+                </p>
+
+                <p>
+                     Para mí, hacerte sentir feliz, amada y valorada es el proposito más hermoso que tengo todos los días de mi vida.
+                </p>
+
+                <div class="pt-6 border-t border-burgundy-200/80 flex flex-col sm:flex-row justify-between items-center gap-4 mt-10">
+                    <div class="text-center sm:text-left">
+                        <p class="font-cursive text-3xl text-burgundy-800">
+                            Pase lo que pase siempre juntos♥
+                        </p>
+                    </div>
+                    <div class="font-cursive text-3xl sm:text-4xl text-burgundy-900 font-bold border-b-2 border-softGold pb-1 px-3">
+                        Rodrigo♥
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botón Sorpresa -->
+            <div class="mt-12 text-center pt-8 border-t border-burgundy-100">
+                <button onclick="triggerSurpriseModal()" class="relative inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white transition-all duration-300 bg-gradient-to-r from-burgundy-700 via-burgundy-600 to-burgundy-800 rounded-full shadow-2xl hover:scale-105 hover:shadow-burgundy-600/50 border border-softGold/40 group overflow-hidden">
+                    <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
+                    <i class="fa-solid fa-heart mr-3 text-softGold animate-pulse"></i>
+                    <span>Abre aqui potonsita XD</span>
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Sorpresa -->
+    <div id="surpriseModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-500">
+        <div id="modalCard" class="paper-card rounded-3xl max-w-lg w-full p-8 md:p-10 text-center border-2 border-softGold shadow-2xl transform scale-90 transition-all duration-500 relative">
+            
+            <button onclick="closeSurpriseModal()" class="absolute top-4 right-4 text-gray-400 hover:text-burgundy-700 text-xl w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="w-16 h-16 rounded-full bg-burgundy-100 border-2 border-softGold flex items-center justify-center text-burgundy-700 text-3xl mx-auto mb-4 animate-bounce">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+
+            <h3 class="font-cursive text-4xl text-burgundy-900 mb-2">Gracias por ser mi novia</h3>
+            <p class="font-garamond italic text-burgundy-800 text-lg mb-6">
+                Eres mi soulmate♥
+            </p>
+
+            <div class="space-y-3 text-sm text-gray-700 text-left bg-burgundy-50/60 p-4 rounded-2xl border border-burgundy-200 mb-6 font-sans">
+                <p class="flex items-center gap-2">
+                    <i class="fa-solid fa-heart text-burgundy-600 text-xs"></i>
+                    <span>Pinky Promise cuidarte y sacarte una sonrisa cada día.</span>
+                </p>
+                <p class="flex items-center gap-2">
+                    <i class="fa-solid fa-heart text-burgundy-600 text-xs"></i>
+                    <span>Pinky promise serte leal en las malas y peores</span>
+                </p>
+                <p class="flex items-center gap-2">
+                    <i class="fa-solid fa-heart text-burgundy-600 text-xs"></i>
+                    <span>Pinky promise casarnos mi amor</span>
+                </p>
+            </div>
+
+            <button onclick="triggerConfettiBurst()" class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-burgundy-800 to-burgundy-950 text-white font-semibold text-sm shadow-lg hover:from-burgundy-700 hover:to-burgundy-900 transition-all border border-softGold/40 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-sparkles text-softGold"></i>
+                <span>dale aqui mi potona son chispitas XDDDDDD</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="relative z-10 py-8 text-center text-xs text-burgundy-200/60 border-t border-burgundy-900/50">
+        <p>11/08/26♥</p>
+    </footer>
+
+    <script>
+        /* ----------------------------------------------------
+           1. CANVAS FLOATING PETALS & SPARKLES ANIMATION
+        ---------------------------------------------------- */
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 100;
+                this.size = Math.random() * 12 + 6;
+                this.speedY = Math.random() * 1.2 + 0.4;
+                this.speedX = Math.sin(Math.random() * Math.PI) * 0.6;
+                this.opacity = Math.random() * 0.5 + 0.2;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                this.isSparkle = Math.random() > 0.6;
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotSpeed;
+
+                if (this.y < -30) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.opacity;
+
+                if (this.isSparkle) {
+                    ctx.fillStyle = '#D4AF37';
+                    ctx.beginPath();
+                    for (let i = 0; i < 4; i++) {
+                        ctx.lineTo(Math.cos((i * Math.PI) / 2) * this.size, Math.sin((i * Math.PI) / 2) * this.size);
+                        ctx.lineTo(Math.cos((i * Math.PI) / 2 + Math.PI / 4) * (this.size / 3), Math.sin((i * Math.PI) / 2 + Math.PI / 4) * (this.size / 3));
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = '#e5748f';
+                    ctx.beginPath();
+                    const topCurveHeight = this.size * 0.3;
+                    ctx.moveTo(0, topCurveHeight);
+                    ctx.bezierCurveTo(-this.size / 2, -topCurveHeight, -this.size, this.size / 3, 0, this.size);
+                    ctx.bezierCurveTo(this.size, this.size / 3, this.size / 2, -topCurveHeight, 0, topCurveHeight);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(Math.floor(window.innerWidth / 22), 40);
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+        initParticles();
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        /* ----------------------------------------------------
+           2. INTERACTIVE ENVELOPE OPENING
+        ---------------------------------------------------- */
+        function openEnvelope() {
+            const envelope = document.getElementById('mainEnvelope');
+            const letter = document.getElementById('letterPaper');
+
+            envelope.classList.add('open');
+            
+            setTimeout(() => {
+                letter.classList.remove('opacity-0', 'translate-y-10');
+                letter.classList.add('opacity-100', 'translate-y-0');
+                letter.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 600);
+
+            triggerConfettiBurst();
+        }
+
+        /* ----------------------------------------------------
+           3. LÓGICA DEL REPRODUCTOR MANUAL DE MÚSICA
+        ---------------------------------------------------- */
+        const audio = document.getElementById('audioPlayer');
+        const mainPlayIcon = document.getElementById('mainPlayIcon');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationTimeEl = document.getElementById('durationTime');
+
+        function toggleAudioManual() {
+            if (audio.paused) {
+                audio.play().then(() => {
+                    mainPlayIcon.className = "fa-solid fa-pause";
+                }).catch(err => {
+                    alert("Por favor selecciona tu archivo MP3 usando el botón 'Seleccionar canción MP3'.");
+                });
+            } else {
+                audio.pause();
+                mainPlayIcon.className = "fa-solid fa-play ml-0.5";
+            }
+        }
+
+        function loadUserAudio(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const objectURL = URL.createObjectURL(file);
+                audio.src = objectURL;
+                document.getElementById('trackTitle').textContent = file.name.replace(/\.[^/.]+$/, "");
+                audio.play();
+                mainPlayIcon.className = "fa-solid fa-pause";
+            }
+        }
+
+        audio.ontimeupdate = function() {
+            if (audio.duration) {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                progressBar.value = progress;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+                durationTimeEl.textContent = formatTime(audio.duration);
+            }
+        };
+
+        function seekAudio(value) {
+            if (audio.duration) {
+                audio.currentTime = (value / 100) * audio.duration;
+            }
+        }
+
+        function rewindAudio() {
+            audio.currentTime = Math.max(0, audio.currentTime - 10);
+        }
+
+        function forwardAudio() {
+            audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        /* ----------------------------------------------------
+           4. MODAL & CONFETTI
+        ---------------------------------------------------- */
+        function triggerSurpriseModal() {
+            const modal = document.getElementById('surpriseModal');
+            const card = document.getElementById('modalCard');
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            card.classList.remove('scale-90');
+            card.classList.add('scale-100');
+
+            triggerConfettiBurst();
+        }
+
+        function closeSurpriseModal() {
+            const modal = document.getElementById('surpriseModal');
+            const card = document.getElementById('modalCard');
+
+            card.classList.remove('scale-100');
+            card.classList.add('scale-90');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function triggerConfettiBurst() {
+            if (typeof confetti === 'function') {
+                const count = 180;
+                const defaults = {
+                    origin: { y: 0.7 },
+                    colors: ['#e5748f', '#bf2b52', '#D4AF37', '#ffffff']
+                };
+
+                function fire(particleRatio, opts) {
+                    confetti(Object.assign({}, defaults, opts, {
+                        particleCount: Math.floor(count * particleRatio)
+                    }));
+                }
+
+                fire(0.25, { spread: 26, startVelocity: 55 });
+                fire(0.2, { spread: 60 });
+                fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+                fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+                fire(0.1, { spread: 120, startVelocity: 45 });
+            }
+        }
+    </script>
+</body>
+</html>
